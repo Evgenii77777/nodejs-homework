@@ -5,6 +5,8 @@ const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const path = require("path");
 const contactsRouter = require("../routes/api/contacts");
+const { authController } = require("../auth/auth.controller");
+const { usersController } = require("../users/users.controller");
 
 dotenv.config();
 
@@ -56,6 +58,8 @@ class Server {
 
   initRoutes() {
     this.server.use("/api/contacts", contactsRouter);
+    this.server.use("/auth", authController);
+    this.server.use("/users", usersController);
   }
 
   initErrorHandling() {
@@ -63,6 +67,21 @@ class Server {
       const statusCode = err.status || 500;
       res.status(statusCode).send(err.message);
     });
+  }
+
+  async initDatabase() {
+    try {
+      const { MONGODB_URI } = process.env;
+      await mongoose.connect(MONGODB_URI, {
+        useUnifiedTopology: true,
+        useNewUrlParser: true,
+        useCreateIndex: true,
+      });
+      console.log("Database connection successful");
+    } catch (err) {
+      console.log(err);
+      process.exit(1);
+    }
   }
 
   listen() {
