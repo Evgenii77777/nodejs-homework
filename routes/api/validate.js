@@ -5,27 +5,27 @@ function controlValidation(req, res, next) {
     name: Joi.string().min(3).required(),
     email: Joi.string().email().required(),
     phone: Joi.string().required(),
+    favorite: Joi.boolean().optional().default(false),
   });
   const validate = createContactsSchema.validate(req.body);
   if (validate.error) {
-    return res.status(400).send({ message: "missing required name field" });
+    return res.status(400).send(validate.error);
   }
   next();
 }
 
-function PatchContact(req, res, next) {
+function controlValidationPath(req, res, next) {
   const createValate = Joi.object({
     name: Joi.string().min(3),
     email: Joi.string().email(),
     phone: Joi.string(),
-    favorite: Joi.boolean(),
   }).min(1);
   const pachValid = createValate.validate(req.body);
   if (pachValid.error) {
-    return res.status(400).send({ message: "missing fields" });
+    return res.status(400).send(pachValid.error);
   }
   next();
 }
 
 exports.controlValidation = controlValidation;
-exports.PatchContact = PatchContact;
+exports.controlValidationPath = controlValidationPath;

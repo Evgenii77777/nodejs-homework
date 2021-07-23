@@ -1,14 +1,27 @@
-const { Router } = require("express");
-const PhoneContacts = require("../api/controller");
-const { controlValidation, PatchContact } = require("./assets/validate");
-const router = Router();
-router.get("/", PhoneContacts.getContacts);
-router.get("/:contactId", PhoneContacts.findContactById);
+const express = require("express");
+const router = express.Router();
+const { controlValidation, controlValidationPath } = require("./validation");
+const controller = require("../../controllers/contacts");
+const { asyncWrapper } = require("../../helpers/async-wrapper");
 
-router.post("/", controlValidation, PhoneContacts.postContact);
-router.delete("/:contactId", PhoneContacts.deleteContact);
+router.get("/", asyncWrapper(controller.listContactsCont));
 
-router.patch("/:contactId", PatchContact, PhoneContacts.patchContact);
+router.get("/:contactId", asyncWrapper(controller.getContactByIdCont));
 
-router.patch("/:contactId/favorite", PatchContact, PhoneContacts.patchFavorite);
+router.post("/", controlValidation, asyncWrapper(controller.postContactCont));
+
+router.delete("/:contactId", asyncWrapper(controller.deleteContactCont));
+
+router.patch(
+  "/:contactId",
+  controlValidationPath,
+  asyncWrapper(controller.patchContactCont)
+);
+
+router.patch(
+  ":contactId/favorite",
+  controlValidationPath,
+  asyncWrapper(controller.patchFavoriteCont)
+);
+
 module.exports = router;
