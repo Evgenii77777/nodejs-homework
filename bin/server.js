@@ -1,10 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const logger = require("morgan");
-const dotenv = require("dotenv");
-const mongoose = require("mongoose");
-const path = require("path");
 const contactsRouter = require("../routes/api/contacts");
+const path = require("path");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const { authController } = require("../auth/auth.controller");
+const { usersController } = require("../users/users.controller");
 
 dotenv.config();
 
@@ -17,10 +19,10 @@ class Server {
 
   async start() {
     this.initServer();
-    this.initConfig();
     this.initMiddlewares();
-    await this.initDatabase();
     this.initRoutes();
+    this.initConfig();
+    await this.initDatabase();
     this.initErrorHandling();
     this.listen();
   }
@@ -29,14 +31,21 @@ class Server {
     this.server = express();
   }
 
-  initConfig() {
-    dotenv.config({ path: path.join(__dirname, "../.env") });
-  }
-
   initMiddlewares() {
     this.server.use(express.json());
     this.server.use(cors({ origin: "*" }));
     this.server.use(logger("dev"));
+    this.server.use("/avatars", express.static("../public/avatars"));
+  }
+
+  initRoutes() {
+    this.server.use("/api/contacts", contactsRouter);
+    this.server.use("/auth", authController);
+    this.server.use("/users", usersController);
+  }
+
+  initConfig() {
+    dotenv.config({ path: path.join(__dirname, "../.env") });
   }
 
   async initDatabase() {
@@ -54,14 +63,11 @@ class Server {
     }
   }
 
-  initRoutes() {
-    this.server.use("/api/contacts", contactsRouter);
-  }
-
   initErrorHandling() {
     this.server.use((err, req, res, next) => {
       const statusCode = err.status || 500;
       res.status(statusCode).send(err.message);
+      console.log(err);
     });
   }
 
