@@ -1,29 +1,24 @@
-const mongoose = require("mongoose");
-const { Schema, model } = mongoose;
+const Joi = require("joi");
+Joi.objectId = require("joi-objectid")(Joi);
 
-const contactSchema = new Schema(
-  {
-    name: {
-      type: String,
-      required: [true, "Set name for contacts"],
-      unique: true,
-    },
-    email: {
-      type: String,
-      required: [true, "Set name for contacts"],
-      unique: true,
-    },
-    number: {
-      type: Number,
-    },
-  },
-  { versionKey: false, timestamps: true }
-);
-
-contactSchema.virtual("strAge").get(function () {
-  return `${this.age} `;
+exports.createContactSchema = Joi.object({
+  name: Joi.string().min(4).required(),
+  email: Joi.string().email().required(),
+  phone: Joi.string().required(),
+  favorite: Joi.boolean().optional(),
 });
 
-const Contact = model("contact", contactSchema);
+exports.updateContactSchema = Joi.object({
+  name: Joi.string().min(4),
+  email: Joi.string().email(),
+  phone: Joi.string(),
+  favorite: Joi.boolean(),
+}).min(1);
 
-module.exports = Contact;
+exports.updateStatusContactSchema = Joi.object({
+  favorite: Joi.boolean().required(),
+});
+
+exports.idValidationSchema = Joi.object({
+  id: Joi.objectId(),
+});
